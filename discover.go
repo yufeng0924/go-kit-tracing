@@ -1,4 +1,4 @@
-package libs
+package tracing
 
 import (
 	"context"

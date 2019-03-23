@@ -1,4 +1,4 @@
-package libs
+package tracing
 
 import (
 	"context"
@@ -9,9 +9,9 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-	jaeger "github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"google.golang.org/grpc"
+	"github.com/uber/jaeger-client-go"
+	config "github.com/uber/jaeger-client-go/config"
+	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/metadata"
 )
@@ -40,13 +40,14 @@ func (c MDReaderWriter) Set(key, val string) {
 }
 
 // NewJaegerTracer NewJaegerTracer for current service
+// NewJaegerTracer NewJaegerTracer for current service
 func NewJaegerTracer(serviceName string, jagentHost string) (tracer opentracing.Tracer, closer io.Closer, err error) {
-	jcfg := jaegercfg.Configuration{
-		Sampler: &jaegercfg.SamplerConfig{
+	jcfg := config.Configuration{
+		Sampler: &config.SamplerConfig{
 			Type:  "const",
 			Param: 1,
 		},
-		Reporter: &jaegercfg.ReporterConfig{
+		Reporter: &config.ReporterConfig{
 			LogSpans:            true,
 			BufferFlushInterval: 1 * time.Second,
 			LocalAgentHostPort:  jagentHost,
@@ -55,7 +56,7 @@ func NewJaegerTracer(serviceName string, jagentHost string) (tracer opentracing.
 
 	tracer, closer, err = jcfg.New(
 		serviceName,
-		jaegercfg.Logger(jaeger.StdLogger),
+		config.Logger(jaeger.StdLogger),
 	)
 	if err != nil {
 		return
@@ -93,6 +94,7 @@ func ClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 			opentracing.Tag{Key: string(ext.Component), Value: "gRPC"},
 			ext.SpanKindRPCClient,
 		)
+		span.SetTag("reply", reply)
 		defer span.Finish()
 
 		md, ok := metadata.FromOutgoingContext(ctx)
@@ -140,7 +142,6 @@ func ServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 				ext.SpanKindRPCServer,
 			)
 			span.SetTag("req", req)
-			span.SetTag("resp", resp)
 			defer span.Finish()
 
 			ctx = opentracing.ContextWithSpan(ctx, span)
