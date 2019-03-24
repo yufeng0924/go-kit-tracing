@@ -19,7 +19,7 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 	tag "github.com/opentracing/opentracing-go/ext"
-	"github.com/opentracing/opentracing-go/log"
+	log "github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

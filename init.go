@@ -24,11 +24,11 @@ import (
 	"github.com/uber/jaeger-lib/metrics"
 	"go.uber.org/zap"
 
-	"github.com/yufeng0924/go-kit-tracing/log"
+	tracinglog "github.com/yufeng0924/go-kit-tracing/log"
 )
 
 // Init creates a new instance of Jaeger tracer.
-func Init(serviceName string, metricsFactory metrics.Factory, logger log.Factory) opentracing.Tracer {
+func Init(serviceName string, metricsFactory metrics.Factory, logger tracinglog.Factory) opentracing.Tracer {
 	cfg, err := config.FromEnv()
 	if err != nil {
 		logger.Bg().Fatal("cannot parse Jaeger env vars", zap.Error(err))
@@ -54,7 +54,7 @@ func Init(serviceName string, metricsFactory metrics.Factory, logger log.Factory
 }
 
 type jaegerLoggerAdapter struct {
-	logger log.Logger
+	logger tracinglog.Logger
 }
 
 func (l jaegerLoggerAdapter) Error(msg string) {
