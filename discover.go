@@ -7,10 +7,8 @@ import (
 	sdetcd "github.com/go-kit/kit/sd/etcd"
 )
 
-var logger log.Logger
-
 // RegisterService register server.
-func RegisterService(etcdServer string, prefix string, instance string) (*sdetcd.Registrar, error) {
+func RegisterService(logger log.Logger, etcdServer string, prefix string, instance string) (*sdetcd.Registrar, error) {
 	var (
 		key = prefix + instance
 	)
@@ -27,7 +25,7 @@ func RegisterService(etcdServer string, prefix string, instance string) (*sdetcd
 }
 
 // DiscoverServer get the server address via etcd
-func DiscoverServer(etcdServer string, prefix string) (string, error) {
+func DiscoverServer(logger log.Logger, etcdServer string, prefix string) (string, error) {
 
 	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
 	if err != nil {

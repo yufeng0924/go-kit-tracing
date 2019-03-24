@@ -41,7 +41,6 @@ func Init(serviceName string, metricsFactory metrics.Factory, logger tracinglog.
 	time.Sleep(100 * time.Millisecond)
 	jaegerLogger := jaegerLoggerAdapter{logger.Bg()}
 
-	metricsFactory = metricsFactory.Namespace(metrics.NSOptions{Name: serviceName, Tags: nil})
 	tracer, _, err := cfg.NewTracer(
 		config.Logger(jaegerLogger),
 		config.Metrics(metricsFactory),
