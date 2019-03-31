@@ -2,7 +2,6 @@ package tracing
 
 import (
 	"context"
-	"io"
 	"strings"
 	"time"
 
@@ -41,7 +40,7 @@ func (c MDReaderWriter) Set(key, val string) {
 
 // NewJaegerTracer NewJaegerTracer for current service
 // NewJaegerTracer NewJaegerTracer for current service
-func NewJaegerTracer(serviceName string, jagentHost string) (tracer opentracing.Tracer, closer io.Closer, err error) {
+func NewJaegerTracer(serviceName string, jagentHost string) (tracer opentracing.Tracer) {
 	jcfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
 			Type:  "const",
@@ -54,15 +53,11 @@ func NewJaegerTracer(serviceName string, jagentHost string) (tracer opentracing.
 		},
 	}
 
-	tracer, closer, err = jcfg.New(
+	tracer, _, _ = jcfg.New(
 		serviceName,
 		config.Logger(jaeger.StdLogger),
 	)
-	if err != nil {
-		return
-	}
-
-	opentracing.SetGlobalTracer(tracer)
+	opentracing.InitGlobalTracer(tracer)
 	return
 }
 
@@ -81,13 +76,11 @@ func ClientInterceptor(tracer opentracing.Tracer) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string,
 		req, reply interface{}, cc *grpc.ClientConn,
 		invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-
 		var parentCtx opentracing.SpanContext
 		parentSpan := opentracing.SpanFromContext(ctx)
 		if parentSpan != nil {
 			parentCtx = parentSpan.Context()
 		}
-
 		span := tracer.StartSpan(
 			method,
 			opentracing.ChildOf(parentCtx),
@@ -125,7 +118,6 @@ func ServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 		req interface{},
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler) (resp interface{}, err error) {
-
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			md = metadata.New(nil)
@@ -146,7 +138,6 @@ func ServerInterceptor(tracer opentracing.Tracer) grpc.UnaryServerInterceptor {
 
 			ctx = opentracing.ContextWithSpan(ctx, span)
 		}
-
 		return handler(ctx, req)
 	}
 }

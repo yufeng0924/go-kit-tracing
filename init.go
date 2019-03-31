@@ -31,6 +31,7 @@ import (
 func Init(serviceName string, metricsFactory metrics.Factory, logger tracinglog.Factory) opentracing.Tracer {
 	cfg, err := config.FromEnv()
 	if err != nil {
+		fmt.Println("error", err)
 		logger.Bg().Fatal("cannot parse Jaeger env vars", zap.Error(err))
 	}
 	cfg.ServiceName = serviceName
@@ -47,6 +48,7 @@ func Init(serviceName string, metricsFactory metrics.Factory, logger tracinglog.
 		config.Observer(rpcmetrics.NewObserver(metricsFactory, rpcmetrics.DefaultNameNormalizer)),
 	)
 	if err != nil {
+		fmt.Println("error", err)
 		logger.Bg().Fatal("cannot initialize Jaeger Tracer", zap.Error(err))
 	}
 	return tracer

@@ -25,11 +25,10 @@ func RegisterService(logger log.Logger, etcdServer string, prefix string, instan
 }
 
 // DiscoverServer get the server address via etcd
-func DiscoverServer(logger log.Logger, etcdServer string, prefix string) (string, error) {
+func DiscoverServer(log log.Logger, etcdServer string, prefix string) (string, error) {
 
 	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
 	if err != nil {
-		logger.Log("cannot connect to etcd", err.Error())
 		return "", err
 	}
 	entries, err := client.GetEntries(prefix)
